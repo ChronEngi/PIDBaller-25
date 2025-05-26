@@ -29,10 +29,7 @@ By ChronEngi
 #include <Wire.h>
 #include <PID_v1.h>
 
-//  LED
-
 //  Definizione dei parametri del sistema
-const float lunghezzaPonte = 15.5;  // lunghezza del ponte in centimetri (parametrico)
 const int DIST_MIN_CALIB = 50;      // distanza minima misurata con il sensore (mm) (pallina a -6 cm)
 const int DIST_MAX_CALIB = 150;     // distanza massima misurata con il sensore (mm) (pallina a +6 cm)
 
@@ -67,7 +64,7 @@ PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 double Error = 0;
 
 //  PID tolleranza
-float tollerance = 1.3;
+float tollerance = 1.8;
 
 //  Variables for stabilitation
 unsigned long stableStartTime = 0;
@@ -116,7 +113,7 @@ void setup()
   //  Set the timing to 20ms (50Hz)
   if (!lox.setMeasurementTimingBudget(20000)) 
   {
-    Serial.println("Errore nell'impostazione del timing budget.");
+    Serial.println("Error while setting the budget.");
   }
 
   //  Turn on the LED, everthing is ready!
@@ -156,7 +153,7 @@ void loop()
   }
   else
   {
-    Serial.println("Misura non valida");
+    Serial.println("Misure not valid");
   }
 
   //  PID!!!!
@@ -177,15 +174,6 @@ void loop()
   dynamicFrequency();
 }
 
-/**
- * Mappa la distanza (in mm) misurata dal sensore VL53L0X 
- * alla posizione X della pallina rispetto al centro del ponte (in cm).
- * Il mapping lineare è basato sui valori di calibrazione:
- * - A distanza DIST_MIN_CALIB corrisponde POS_MIN [cm].
- * - A distanza DIST_MAX_CALIB corrisponde POS_MAX [cm].
- * I valori negativi di X indicano posizione a sinistra del centro,
- * quelli positivi a destra del centro.
- */
 float distanzaToPosizione(int distanza_mm) {
     // Clamping della lettura nel range di calibrazione
     if (distanza_mm < DIST_MIN_CALIB) distanza_mm = DIST_MIN_CALIB;
@@ -213,7 +201,7 @@ void move(int value)
 
   //  Move the motor but at the relative center
   if(stable == false)
-    motor.write(value+100-1);
+    motor.write(value+100-3);
 
   //  Close the function
   return;
@@ -283,9 +271,9 @@ void dynamicFrequency()
       stable = true;
     } 
     else if 
-    (millis() - stableStartTime >= 2000) 
+    (millis() - stableStartTime >= 1500) 
     {
-      // If stable for 2 seconds
+      // If stable for 1.5s
 
       //  Change the frequency
       lox.setMeasurementTimingBudget(450000);
